@@ -3,6 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:digihydro/mainpages/device_screen.dart';
 import 'package:digihydro/index_screen.dart';
 
+import 'load_screen.dart';
+import 'mainpages/dashboard.dart';
+
 class AuthPage extends StatelessWidget {
   const AuthPage({super.key});
 
@@ -14,7 +17,7 @@ class AuthPage extends StatelessWidget {
         builder: (context, snapshot) {
           // user is logged in
           if (snapshot.hasData) {
-            return homePage();
+            return dashBoard();
           }
 
           // user is NOT logged in
