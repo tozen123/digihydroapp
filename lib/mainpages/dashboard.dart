@@ -11,6 +11,61 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:digihydro/drawer_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:firebase_database/firebase_database.dart';
+import 'package:intl/intl.dart';
+
+// Fetch data from the firebase realtime database
+Future<Map<String, dynamic>?> fetchData() async {
+  DatabaseReference databaseRef =
+  FirebaseDatabase.instance.reference().child('measurement_history/Devices/0420'); // static path
+
+  DatabaseEvent event = await databaseRef.once();
+
+  if (event.snapshot.value != null) {
+    dynamic snapshotValue = event.snapshot.value;
+    if (snapshotValue is Map) {
+      return Map<String, dynamic>.from(snapshotValue);
+    }
+  }
+
+  return null; // return null if no data is present
+}
+
+
+
+void getData() async {
+  Map<String, dynamic>? data = await fetchData();
+
+  if (data != null) {
+    data.forEach((key, value) {
+      String timestamp = value['timestamp'];
+      int? timestampInMilliseconds = int.tryParse(timestamp);
+
+      if (timestampInMilliseconds != null) {
+        DateTime dateTime =
+        DateTime.fromMillisecondsSinceEpoch(timestampInMilliseconds * 1000);
+
+        String formattedDateTime = DateFormat('yyyy-MM-dd HH:mm:ss').format(dateTime);
+
+        // test print -------------------------------
+        print('Date: $formattedDateTime');
+
+        value.forEach((key, value) {
+          if (key != 'timestamp') {
+            print('$key: $value');
+          }
+        });
+
+        // print breaker
+        print('-----');
+        // test print -------------------------------
+      }
+    });
+  }
+}
+
+
+
 
 final FlutterLocalNotificationsPlugin localNotif =
     FlutterLocalNotificationsPlugin();
@@ -27,6 +82,7 @@ class welcomeScreen extends State<dashBoard> {
   final refReserv = FirebaseDatabase.instance.ref('Reservoir');
   final refDevice = FirebaseDatabase.instance.ref('Devices');
 
+
   @override
   void initState() {
     super.initState();
@@ -39,6 +95,9 @@ class welcomeScreen extends State<dashBoard> {
 
   @override
   Widget build(BuildContext context) {
+    getData();
+
+
     return Scaffold(
       backgroundColor: Color.fromARGB(255, 201, 237, 220),
       drawer: drawerPage(),
@@ -898,3 +957,5 @@ Color iconColorDash(DataSnapshot snapshot) {
     return Colors.grey;
   }
 }
+
+
